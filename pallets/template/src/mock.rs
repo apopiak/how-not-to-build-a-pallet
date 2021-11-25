@@ -7,6 +7,9 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 };
 
+use crate::WeightInfo;
+use frame_support::pallet_prelude::Weight;
+
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -53,8 +56,14 @@ impl system::Config for Test {
 	type OnSetCode = ();
 }
 
+impl WeightInfo for () {
+	fn store_something(_s: u32, ) -> Weight { 0 }
+	fn benign_repeat_hashing(_i: u32, ) -> Weight { 0 }
+}
+
 impl pallet_template::Config for Test {
 	type Event = Event;
+	type WeightInfo = ();
 }
 
 // Build genesis storage according to the mock runtime.
