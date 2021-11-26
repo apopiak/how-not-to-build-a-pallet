@@ -20,6 +20,8 @@ use sp_runtime::traits::Hash;
 pub mod pallet {
 	use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
+	use sp_runtime::traits::Saturating;
+	use sp_runtime::traits::Zero;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -58,6 +60,7 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
+		SomethingIs(u32),
 		/// The resulting hash of all our work
 		TheHash(T::Hash),
 		/// The calculated sum
@@ -71,6 +74,20 @@ pub mod pallet {
 		NoneValue,
 		/// An overflow occured while calculating.
 		Overflow,
+	}
+
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_initialize(n: T::BlockNumber) -> frame_support::weights::Weight {
+			if (n.saturating_add(1u8.into()) % 10u8.into()).is_zero() {
+				// EVEN WORSE; ESPECIALLY DON'T USE UNWRAP IN ON_INITIALIZE.
+				let something = Self::something().unwrap();
+				Self::deposit_event(Event::<T>::SomethingIs(something));
+				T::DbWeight::get().reads(1)
+			} else {
+				0
+			}
+		}
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
